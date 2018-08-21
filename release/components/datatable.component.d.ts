@@ -275,6 +275,10 @@ export declare class DatatableComponent implements OnInit, DoCheck, AfterViewIni
      */
     resize: EventEmitter<any>;
     /**
+     * Fires event when row was dragged and dropped
+     */
+    onRowDrop: EventEmitter<any>;
+    /**
      * The context menu was invoked on the table.
      * type indicates whether the header or the body was clicked.
      * content contains either the column or the row that was clicked.
@@ -402,6 +406,7 @@ export declare class DatatableComponent implements OnInit, DoCheck, AfterViewIni
      * view has been fully initialized.
      */
     ngAfterViewInit(): void;
+    onRowDropSuccess(event: any): void;
     /**
      * Lifecycle hook that is called after a component's
      * content has been fully initialized.
