@@ -31,6 +31,7 @@ var DataTableBodyComponent = /** @class */ (function () {
         this.detailToggle = new core_1.EventEmitter();
         this.rowContextmenu = new core_1.EventEmitter(false);
         this.treeAction = new core_1.EventEmitter();
+        this.onRowDrop = new core_1.EventEmitter();
         this.rowHeightsCache = new utils_1.RowHeightCache();
         this.temp = [];
         this.offsetY = 0;
@@ -60,6 +61,7 @@ var DataTableBodyComponent = /** @class */ (function () {
             .subscribe(function (_a) {
             var el = _a.el, target = _a.target, source = _a.source, sourceModel = _a.sourceModel, targetModel = _a.targetModel, item = _a.item;
             _this.rows = sourceModel.slice();
+            _this.onRowDrop.emit(_this.rows);
         });
     }
     Object.defineProperty(DataTableBodyComponent.prototype, "pageSize", {
@@ -760,6 +762,10 @@ var DataTableBodyComponent = /** @class */ (function () {
         core_1.Output(),
         __metadata("design:type", core_1.EventEmitter)
     ], DataTableBodyComponent.prototype, "treeAction", void 0);
+    __decorate([
+        core_1.Output(),
+        __metadata("design:type", core_1.EventEmitter)
+    ], DataTableBodyComponent.prototype, "onRowDrop", void 0);
     __decorate([
         core_1.ViewChild(scroller_component_1.ScrollerComponent),
         __metadata("design:type", scroller_component_1.ScrollerComponent)

@@ -3633,6 +3633,7 @@ var DataTableBodyComponent = /** @class */ (function () {
         this.detailToggle = new core_1.EventEmitter();
         this.rowContextmenu = new core_1.EventEmitter(false);
         this.treeAction = new core_1.EventEmitter();
+        this.onRowDrop = new core_1.EventEmitter();
         this.rowHeightsCache = new utils_1.RowHeightCache();
         this.temp = [];
         this.offsetY = 0;
@@ -3662,6 +3663,7 @@ var DataTableBodyComponent = /** @class */ (function () {
             .subscribe(function (_a) {
             var el = _a.el, target = _a.target, source = _a.source, sourceModel = _a.sourceModel, targetModel = _a.targetModel, item = _a.item;
             _this.rows = sourceModel.slice();
+            _this.onRowDrop.emit(_this.rows);
         });
     }
     Object.defineProperty(DataTableBodyComponent.prototype, "pageSize", {
@@ -4362,6 +4364,10 @@ var DataTableBodyComponent = /** @class */ (function () {
         core_1.Output(),
         __metadata("design:type", core_1.EventEmitter)
     ], DataTableBodyComponent.prototype, "treeAction", void 0);
+    __decorate([
+        core_1.Output(),
+        __metadata("design:type", core_1.EventEmitter)
+    ], DataTableBodyComponent.prototype, "onRowDrop", void 0);
     __decorate([
         core_1.ViewChild(scroller_component_1.ScrollerComponent),
         __metadata("design:type", scroller_component_1.ScrollerComponent)
@@ -5342,6 +5348,10 @@ var DatatableComponent = /** @class */ (function () {
          */
         this.resize = new core_1.EventEmitter();
         /**
+         * Fires event when row was dragged and dropped
+         */
+        this.onRowDrop = new core_1.EventEmitter();
+        /**
          * The context menu was invoked on the table.
          * type indicates whether the header or the body was clicked.
          * content contains either the column or the row that was clicked.
@@ -5673,6 +5683,9 @@ var DatatableComponent = /** @class */ (function () {
                 });
             }
         });
+    };
+    DatatableComponent.prototype.onRowDropSuccess = function (event) {
+        this.onRowDrop.emit(event);
     };
     /**
      * Lifecycle hook that is called after a component's
@@ -6264,6 +6277,10 @@ var DatatableComponent = /** @class */ (function () {
     ], DatatableComponent.prototype, "resize", void 0);
     __decorate([
         core_1.Output(),
+        __metadata("design:type", core_1.EventEmitter)
+    ], DatatableComponent.prototype, "onRowDrop", void 0);
+    __decorate([
+        core_1.Output(),
         __metadata("design:type", Object)
     ], DatatableComponent.prototype, "tableContextmenu", void 0);
     __decorate([
@@ -6360,7 +6377,7 @@ var DatatableComponent = /** @class */ (function () {
     DatatableComponent = __decorate([
         core_1.Component({
             selector: 'ngx-datatable',
-            template: "\n    <div\n      visibilityObserver\n      (visible)=\"recalculate()\">\n      <datatable-header\n        *ngIf=\"headerHeight\"\n        [sorts]=\"sorts\"\n        [sortType]=\"sortType\"\n        [scrollbarH]=\"scrollbarH\"\n        [innerWidth]=\"_innerWidth\"\n        [offsetX]=\"_offsetX | async\"\n        [dealsWithGroup]=\"groupedRows\"\n        [columns]=\"_internalColumns\"\n        [headerHeight]=\"headerHeight\"\n        [reorderable]=\"reorderable\"\n        [targetMarkerTemplate]=\"targetMarkerTemplate\"\n        [sortAscendingIcon]=\"cssClasses.sortAscending\"\n        [sortDescendingIcon]=\"cssClasses.sortDescending\"\n        [allRowsSelected]=\"allRowsSelected\"\n        [selectionType]=\"selectionType\"\n        (sort)=\"onColumnSort($event)\"\n        (resize)=\"onColumnResize($event)\"\n        (reorder)=\"onColumnReorder($event)\"\n        (select)=\"onHeaderSelect($event)\"\n        (columnContextmenu)=\"onColumnContextmenu($event)\">\n      </datatable-header>\n      <datatable-body\n        [draggableRows]=\"draggableRows\"\n        [groupRowsBy]=\"groupRowsBy\"\n        [groupedRows]=\"groupedRows\"\n        [rows]=\"_internalRows\"\n        [groupExpansionDefault]=\"groupExpansionDefault\"\n        [scrollbarV]=\"scrollbarV\"\n        [scrollbarH]=\"scrollbarH\"\n        [virtualization]=\"virtualization\"\n        [loadingIndicator]=\"loadingIndicator\"\n        [externalPaging]=\"externalPaging\"\n        [rowHeight]=\"rowHeight\"\n        [rowCount]=\"rowCount\"\n        [offset]=\"offset\"\n        [trackByProp]=\"trackByProp\"\n        [columns]=\"_internalColumns\"\n        [pageSize]=\"pageSize\"\n        [offsetX]=\"_offsetX | async\"\n        [rowDetail]=\"rowDetail\"\n        [groupHeader]=\"groupHeader\"\n        [selected]=\"selected\"\n        [innerWidth]=\"_innerWidth\"\n        [bodyHeight]=\"bodyHeight\"\n        [selectionType]=\"selectionType\"\n        [emptyMessage]=\"messages.emptyMessage\"\n        [rowIdentity]=\"rowIdentity\"\n        [rowClass]=\"rowClass\"\n        [selectCheck]=\"selectCheck\"\n        [displayCheck]=\"displayCheck\"\n        [summaryRow]=\"summaryRow\"\n        [summaryHeight]=\"summaryHeight\"\n        [summaryPosition]=\"summaryPosition\"\n        (page)=\"onBodyPage($event)\"\n        (activate)=\"activate.emit($event)\"\n        (rowContextmenu)=\"onRowContextmenu($event)\"\n        (select)=\"onBodySelect($event)\"\n        (scroll)=\"onBodyScroll($event)\"\n        (treeAction)=\"onTreeAction($event)\">\n      </datatable-body>\n      <datatable-footer\n        *ngIf=\"footerHeight\"\n        [rowCount]=\"rowCount\"\n        [pageSize]=\"pageSize\"\n        [offset]=\"offset\"\n        [footerHeight]=\"footerHeight\"\n        [footerTemplate]=\"footer\"\n        [totalMessage]=\"messages.totalMessage\"\n        [pagerLeftArrowIcon]=\"cssClasses.pagerLeftArrow\"\n        [pagerRightArrowIcon]=\"cssClasses.pagerRightArrow\"\n        [pagerPreviousIcon]=\"cssClasses.pagerPrevious\"\n        [selectedCount]=\"selected.length\"\n        [selectedMessage]=\"!!selectionType && messages.selectedMessage\"\n        [pagerNextIcon]=\"cssClasses.pagerNext\"\n        (page)=\"onFooterPage($event)\">\n      </datatable-footer>\n    </div>\n  ",
+            template: "\n    <div\n      visibilityObserver\n      (visible)=\"recalculate()\">\n      <datatable-header\n        *ngIf=\"headerHeight\"\n        [sorts]=\"sorts\"\n        [sortType]=\"sortType\"\n        [scrollbarH]=\"scrollbarH\"\n        [innerWidth]=\"_innerWidth\"\n        [offsetX]=\"_offsetX | async\"\n        [dealsWithGroup]=\"groupedRows\"\n        [columns]=\"_internalColumns\"\n        [headerHeight]=\"headerHeight\"\n        [reorderable]=\"reorderable\"\n        [targetMarkerTemplate]=\"targetMarkerTemplate\"\n        [sortAscendingIcon]=\"cssClasses.sortAscending\"\n        [sortDescendingIcon]=\"cssClasses.sortDescending\"\n        [allRowsSelected]=\"allRowsSelected\"\n        [selectionType]=\"selectionType\"\n        (sort)=\"onColumnSort($event)\"\n        (resize)=\"onColumnResize($event)\"\n        (reorder)=\"onColumnReorder($event)\"\n        (select)=\"onHeaderSelect($event)\"\n        (columnContextmenu)=\"onColumnContextmenu($event)\">\n      </datatable-header>\n      <datatable-body\n        (onRowDrop)=\"onRowDropSuccess($event)\"\n        [draggableRows]=\"draggableRows\"\n        [groupRowsBy]=\"groupRowsBy\"\n        [groupedRows]=\"groupedRows\"\n        [rows]=\"_internalRows\"\n        [groupExpansionDefault]=\"groupExpansionDefault\"\n        [scrollbarV]=\"scrollbarV\"\n        [scrollbarH]=\"scrollbarH\"\n        [virtualization]=\"virtualization\"\n        [loadingIndicator]=\"loadingIndicator\"\n        [externalPaging]=\"externalPaging\"\n        [rowHeight]=\"rowHeight\"\n        [rowCount]=\"rowCount\"\n        [offset]=\"offset\"\n        [trackByProp]=\"trackByProp\"\n        [columns]=\"_internalColumns\"\n        [pageSize]=\"pageSize\"\n        [offsetX]=\"_offsetX | async\"\n        [rowDetail]=\"rowDetail\"\n        [groupHeader]=\"groupHeader\"\n        [selected]=\"selected\"\n        [innerWidth]=\"_innerWidth\"\n        [bodyHeight]=\"bodyHeight\"\n        [selectionType]=\"selectionType\"\n        [emptyMessage]=\"messages.emptyMessage\"\n        [rowIdentity]=\"rowIdentity\"\n        [rowClass]=\"rowClass\"\n        [selectCheck]=\"selectCheck\"\n        [displayCheck]=\"displayCheck\"\n        [summaryRow]=\"summaryRow\"\n        [summaryHeight]=\"summaryHeight\"\n        [summaryPosition]=\"summaryPosition\"\n        (page)=\"onBodyPage($event)\"\n        (activate)=\"activate.emit($event)\"\n        (rowContextmenu)=\"onRowContextmenu($event)\"\n        (select)=\"onBodySelect($event)\"\n        (scroll)=\"onBodyScroll($event)\"\n        (treeAction)=\"onTreeAction($event)\">\n      </datatable-body>\n      <datatable-footer\n        *ngIf=\"footerHeight\"\n        [rowCount]=\"rowCount\"\n        [pageSize]=\"pageSize\"\n        [offset]=\"offset\"\n        [footerHeight]=\"footerHeight\"\n        [footerTemplate]=\"footer\"\n        [totalMessage]=\"messages.totalMessage\"\n        [pagerLeftArrowIcon]=\"cssClasses.pagerLeftArrow\"\n        [pagerRightArrowIcon]=\"cssClasses.pagerRightArrow\"\n        [pagerPreviousIcon]=\"cssClasses.pagerPrevious\"\n        [selectedCount]=\"selected.length\"\n        [selectedMessage]=\"!!selectionType && messages.selectedMessage\"\n        [pagerNextIcon]=\"cssClasses.pagerNext\"\n        (page)=\"onFooterPage($event)\">\n      </datatable-footer>\n    </div>\n  ",
             changeDetection: core_1.ChangeDetectionStrategy.OnPush,
             encapsulation: core_1.ViewEncapsulation.None,
             styles: [__webpack_require__("./src/components/datatable.component.scss")],

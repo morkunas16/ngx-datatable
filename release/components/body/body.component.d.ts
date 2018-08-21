@@ -48,6 +48,7 @@ export declare class DataTableBodyComponent implements OnInit, OnDestroy {
         row: any;
     }>;
     treeAction: EventEmitter<any>;
+    onRowDrop: EventEmitter<any>;
     scroller: ScrollerComponent;
     /**
      * Returns if selection is enabled.
