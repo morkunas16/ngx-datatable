@@ -3659,6 +3659,17 @@ var DataTableBodyComponent = /** @class */ (function () {
                 return idx;
             }
         }.bind(this);
+        /**
+         * Declares to dragula handle to drag row
+         */
+        dragulaService.createGroup('newBag', {
+            moves: function (el, container, handle) {
+                return handle.className === 'handle';
+            }
+        });
+        /**
+         * Subscribes for dropModel event and emit onRowDrop event to fire it outside the ngx-datatable
+         */
         dragulaService.dropModel('newBag')
             .subscribe(function (_a) {
             var el = _a.el, target = _a.target, source = _a.source, sourceModel = _a.sourceModel, targetModel = _a.targetModel, item = _a.item;
