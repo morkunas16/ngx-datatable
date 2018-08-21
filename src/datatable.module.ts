@@ -1,6 +1,6 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {DndModule} from 'ng2-dnd';
+import {DragulaModule, DragulaService} from 'ng2-dragula';
 
 import {
   DatatableComponent,
@@ -42,15 +42,17 @@ import {
   ColumnChangesService
 } from './services';
 
+
 @NgModule({
   imports: [
     CommonModule,
-    DndModule.forRoot()
+    DragulaModule
   ],
   providers: [
     ScrollbarHelper,
     DimensionsHelper,
     ColumnChangesService,
+    DragulaService
   ],
   declarations: [
     DataTableFooterTemplateDirective,
