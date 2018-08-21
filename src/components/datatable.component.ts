@@ -51,6 +51,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
         (columnContextmenu)="onColumnContextmenu($event)">
       </datatable-header>
       <datatable-body
+        (onRowDrop)="onRowDropSuccess($event)"
         [draggableRows]="draggableRows"
         [groupRowsBy]="groupRowsBy"
         [groupedRows]="groupedRows"
@@ -115,7 +116,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   }
 })
 export class DatatableComponent implements OnInit, DoCheck, AfterViewInit {
-
   /**
    * Enable rows dragging
    * @type {boolean}
@@ -520,6 +520,11 @@ export class DatatableComponent implements OnInit, DoCheck, AfterViewInit {
   @Output() resize: EventEmitter<any> = new EventEmitter();
 
   /**
+   * Fires event when row was dragged and dropped
+   */
+  @Output() onRowDrop: EventEmitter<any> = new EventEmitter<any>();
+
+  /**
    * The context menu was invoked on the table.
    * type indicates whether the header or the body was clicked.
    * content contains either the column or the row that was clicked.
@@ -767,6 +772,10 @@ export class DatatableComponent implements OnInit, DoCheck, AfterViewInit {
         });
       }
     });
+  }
+
+  onRowDropSuccess(event) {
+    this.onRowDrop.emit(event);
   }
 
   /**

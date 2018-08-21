@@ -15,6 +15,7 @@ import { Component } from '@angular/core';
       <ngx-datatable
         class="material"
         [draggableRows]="true" 
+        (onRowDrop)="onDropEvent($event)"
         [rows]="rows"
         [loadingIndicator]="loadingIndicator"
         [columns]="columns"
@@ -44,6 +45,10 @@ export class BasicAutoComponent {
       this.rows = data;
       setTimeout(() => { this.loadingIndicator = false; }, 1500);
     });
+  }
+
+  onDropEvent(event) {
+    console.log('dropped', event);
   }
 
   fetch(cb) {

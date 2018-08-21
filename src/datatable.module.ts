@@ -42,7 +42,6 @@ import {
   ColumnChangesService
 } from './services';
 
-
 @NgModule({
   imports: [
     CommonModule,
