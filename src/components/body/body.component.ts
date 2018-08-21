@@ -277,6 +277,19 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
         return idx;
       }
     }.bind(this);
+
+    /**
+     * Declares to dragula handle to drag row
+     */
+    dragulaService.createGroup('newBag', {
+      moves: (el, container, handle) => {
+        return handle.className === 'handle';
+      }
+    });
+
+    /**
+     * Subscribes for dropModel event and emit onRowDrop event to fire it outside the ngx-datatable
+     */
     dragulaService.dropModel('newBag')
       .subscribe(({el, target, source, sourceModel, targetModel, item}) => {
         this.rows = [...sourceModel];
