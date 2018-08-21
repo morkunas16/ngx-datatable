@@ -1,5 +1,6 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {DndModule} from 'ng2-dnd';
 
 import {
   DatatableComponent,
@@ -43,12 +44,13 @@ import {
 
 @NgModule({
   imports: [
-    CommonModule
+    CommonModule,
+    DndModule.forRoot()
   ],
   providers: [
     ScrollbarHelper,
     DimensionsHelper,
-    ColumnChangesService
+    ColumnChangesService,
   ],
   declarations: [
     DataTableFooterTemplateDirective,
@@ -95,4 +97,5 @@ import {
     DatatableGroupHeaderTemplateDirective
   ]
 })
-export class NgxDatatableModule { }
+export class NgxDatatableModule {
+}

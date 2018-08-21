@@ -2,10 +2,10 @@ import {
   Component, Output, EventEmitter, Input, HostBinding, ChangeDetectorRef,
   ViewChild, OnInit, OnDestroy, ChangeDetectionStrategy
 } from '@angular/core';
-import { translateXY, columnsByPin, columnGroupWidths, RowHeightCache } from '../../utils';
-import { SelectionType } from '../../types';
-import { ScrollerComponent } from './scroller.component';
-import { MouseEvent } from '../../events';
+import {translateXY, columnsByPin, columnGroupWidths, RowHeightCache} from '../../utils';
+import {SelectionType} from '../../types';
+import {ScrollerComponent} from './scroller.component';
+import {MouseEvent} from '../../events';
 
 @Component({
   selector: 'datatable-body',
@@ -25,6 +25,8 @@ import { MouseEvent } from '../../events';
       </datatable-progress>
       <datatable-scroller
         *ngIf="rows?.length"
+        dnd-sortable-container
+        [sortableData]="rows"
         [scrollbarV]="scrollbarV"
         [scrollbarH]="scrollbarH"
         [scrollHeight]="scrollHeight"
@@ -41,6 +43,10 @@ import { MouseEvent } from '../../events';
         <datatable-row-wrapper
           [groupedRows]="groupedRows"
           *ngFor="let group of temp; let i = index; trackBy: rowTrackingFn;"
+          dnd-sortable
+          [dragEnabled]="draggableRows"
+          [sortableIndex]="i"
+          (onDropSuccess)="onRowDrop($event)"
           [innerWidth]="innerWidth"
           [ngStyle]="getRowsStyles(group)"
           [rowDetail]="rowDetail"
@@ -134,6 +140,8 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
   @Input() summaryRow: boolean;
   @Input() summaryPosition: string;
   @Input() summaryHeight: number;
+
+  @Input() draggableRows: boolean;
 
   @Input() set pageSize(val: number) {
     this._pageSize = val;
@@ -260,7 +268,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
    */
   constructor(private cd: ChangeDetectorRef) {
     // declare fn here so we can get access to the `this` property
-    this.rowTrackingFn = function(this: any, index: number, row: any): any {
+    this.rowTrackingFn = function (this: any, index: number, row: any): any {
       const idx = this.getRowIndex(row);
       if (this.trackByProp) {
         return `${idx}-${this.trackByProp}`;
@@ -272,12 +280,20 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * On row drop update rows in ngx-datatable
+   * @param event
+   */
+  onRowDrop(event) {
+    this.rows = [...this.rows];
+  }
+
+  /**
    * Called after the constructor, initializing input properties
    */
   ngOnInit(): void {
     if (this.rowDetail) {
       this.listener = this.rowDetail.toggle
-        .subscribe(({ type, value }: { type: string, value: any }) => {
+        .subscribe(({type, value}: { type: string, value: any }) => {
           if (type === 'row') this.toggleRowExpansion(value);
           if (type === 'all') this.toggleAllRows(value);
 
@@ -291,7 +307,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
 
     if (this.groupHeader) {
       this.listener = this.groupHeader.toggle
-        .subscribe(({ type, value }: { type: string, value: any }) => {
+        .subscribe(({type, value}: { type: string, value: any }) => {
           if (type === 'group') this.toggleRowExpansion(value);
           if (type === 'all') this.toggleAllRows(value);
 
@@ -368,7 +384,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
     }
 
     if (direction !== undefined && !isNaN(offset)) {
-      this.page.emit({ offset });
+      this.page.emit({offset});
     }
   }
 
@@ -376,7 +392,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
    * Updates the rows in the view port
    */
   updateRows(): void {
-    const { first, last } = this.indexes;
+    const {first, last} = this.indexes;
     let rowIndex = first;
     let idx = 0;
     const temp: any[] = [];
@@ -386,7 +402,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
     // if grouprowsby has been specified treat row paging
     // parameters as group paging parameters ie if limit 10 has been
     // specified treat it as 10 groups rather than 10 rows
-    if(this.groupedRows) {
+    if (this.groupedRows) {
       let maxRowsPerGroup = 3;
       // if there is only one group set the maximum number of
       // rows per group the same as the total number of rows
@@ -535,7 +551,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
       return null;
     }
 
-    const styles = { position: 'absolute' };
+    const styles = {position: 'absolute'};
     const pos = this.rowHeightsCache.query(this.rows.length - 1);
 
     translateXY(styles, 0, pos);
@@ -580,7 +596,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
       last = Math.min((first + this.pageSize), this.rowCount);
     }
 
-    this.indexes = { first, last };
+    this.indexes = {first, last};
   }
 
   /**
@@ -710,9 +726,9 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
       width: `${widths[group]}px`
     };
 
-    if(group === 'left') {
+    if (group === 'left') {
       translateXY(styles, offsetX, 0);
-    } else if(group === 'right') {
+    } else if (group === 'right') {
       const bodyWidth = parseInt(this.innerWidth + '', 0);
       const totalDiff = widths.total - bodyWidth;
       const offsetDiff = totalDiff - offsetX;
@@ -745,7 +761,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
   }
 
   onTreeAction(row: any) {
-    this.treeAction.emit({ row });
+    this.treeAction.emit({row});
   }
 
 }
