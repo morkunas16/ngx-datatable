@@ -222,6 +222,8 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
   @Output() rowContextmenu = new EventEmitter<{ event: MouseEvent, row: any }>(false);
   @Output() treeAction: EventEmitter<any> = new EventEmitter();
 
+  @Output() onRowDrop: EventEmitter<any> = new EventEmitter<any>();
+
   @ViewChild(ScrollerComponent) scroller: ScrollerComponent;
 
   /**
@@ -278,6 +280,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
     dragulaService.dropModel('newBag')
       .subscribe(({el, target, source, sourceModel, targetModel, item}) => {
         this.rows = [...sourceModel];
+        this.onRowDrop.emit(this.rows);
       });
   }
 
