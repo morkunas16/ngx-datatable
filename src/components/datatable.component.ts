@@ -52,7 +52,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
       </datatable-header>
       <datatable-body
         (onRowDrop)="onRowDropSuccess($event)"
-        [draggableRows]="draggableRows"
+        [dragulaName]="dragulaName"
         [groupRowsBy]="groupRowsBy"
         [groupedRows]="groupedRows"
         [rows]="_internalRows"
@@ -118,9 +118,9 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 export class DatatableComponent implements OnInit, DoCheck, AfterViewInit {
   /**
    * Enable rows dragging
-   * @type {boolean}
+   * @type {string}
    */
-  @Input() draggableRows: boolean = false;
+  @Input() dragulaName?: string = null;
 
   /**
    * Template for the target marker of drag target columns.

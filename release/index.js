@@ -3625,7 +3625,6 @@ var DataTableBodyComponent = /** @class */ (function () {
         this.cd = cd;
         this.dragulaService = dragulaService;
         this.selected = [];
-        this.draggableRows = false;
         this.scroll = new core_1.EventEmitter();
         this.page = new core_1.EventEmitter();
         this.activate = new core_1.EventEmitter();
@@ -3662,15 +3661,17 @@ var DataTableBodyComponent = /** @class */ (function () {
         /**
          * Declares to dragula handle to drag row
          */
-        dragulaService.createGroup('newBag', {
-            moves: function (el, container, handle) {
-                return handle.className === 'handle';
-            }
-        });
+        if (!this.dragulaService.find(this.dragulaName)) {
+            dragulaService.createGroup(this.dragulaName, {
+                moves: function (el, container, handle) {
+                    return handle.className === 'handle';
+                }
+            });
+        }
         /**
          * Subscribes for dropModel event and emit onRowDrop event to fire it outside the ngx-datatable
          */
-        dragulaService.dropModel('newBag')
+        dragulaService.dropModel(this.dragulaName)
             .subscribe(function (_a) {
             var el = _a.el, target = _a.target, source = _a.source, sourceModel = _a.sourceModel, targetModel = _a.targetModel, item = _a.item;
             _this.rows = sourceModel.slice();
@@ -3789,12 +3790,6 @@ var DataTableBodyComponent = /** @class */ (function () {
         configurable: true
     });
     /**
-     * On row drop update rows in ngx-datatable
-     */
-    DataTableBodyComponent.prototype.isRowsDraggable = function () {
-        return this.draggableRows ? 'newBag' : null;
-    };
-    /**
      * Called after the constructor, initializing input properties
      */
     DataTableBodyComponent.prototype.ngOnInit = function () {
@@ -3834,6 +3829,8 @@ var DataTableBodyComponent = /** @class */ (function () {
      * Called once, before the instance is destroyed.
      */
     DataTableBodyComponent.prototype.ngOnDestroy = function () {
+        if (this.dragulaService.find('newBag'))
+            this.dragulaService.destroy('newBag');
         if (this.rowDetail)
             this.listener.unsubscribe();
         if (this.groupHeader)
@@ -4309,8 +4306,8 @@ var DataTableBodyComponent = /** @class */ (function () {
     ], DataTableBodyComponent.prototype, "summaryHeight", void 0);
     __decorate([
         core_1.Input(),
-        __metadata("design:type", Boolean)
-    ], DataTableBodyComponent.prototype, "draggableRows", void 0);
+        __metadata("design:type", String)
+    ], DataTableBodyComponent.prototype, "dragulaName", void 0);
     __decorate([
         core_1.Input(),
         __metadata("design:type", Number),
@@ -4386,7 +4383,7 @@ var DataTableBodyComponent = /** @class */ (function () {
     DataTableBodyComponent = __decorate([
         core_1.Component({
             selector: 'datatable-body',
-            template: "\n    <datatable-selection\n      #selector\n      [selected]=\"selected\"\n      [rows]=\"rows\"\n      [selectCheck]=\"selectCheck\"\n      [selectEnabled]=\"selectEnabled\"\n      [selectionType]=\"selectionType\"\n      [rowIdentity]=\"rowIdentity\"\n      (select)=\"select.emit($event)\"\n      (activate)=\"activate.emit($event)\">\n      <datatable-progress\n        *ngIf=\"loadingIndicator\">\n      </datatable-progress>\n      <datatable-scroller\n        *ngIf=\"rows?.length\"\n        [scrollbarV]=\"scrollbarV\"\n        [scrollbarH]=\"scrollbarH\"\n        [scrollHeight]=\"scrollHeight\"\n        [scrollWidth]=\"columnGroupWidths?.total\"\n        (scroll)=\"onBodyScroll($event)\">\n        <datatable-summary-row\n          *ngIf=\"summaryRow && summaryPosition === 'top'\"\n          [rowHeight]=\"summaryHeight\"\n          [offsetX]=\"offsetX\"\n          [innerWidth]=\"innerWidth\"\n          [rows]=\"rows\"\n          [columns]=\"columns\">\n        </datatable-summary-row>\n        <div\n          [dragula]=\"isRowsDraggable()\"\n          [(dragulaModel)]=\"rows\">\n          <datatable-row-wrapper\n            [groupedRows]=\"groupedRows\"\n            *ngFor=\"let group of temp; let i = index;\"\n            [innerWidth]=\"innerWidth\"\n            [ngStyle]=\"getRowsStyles(group)\"\n            [rowDetail]=\"rowDetail\"\n            [groupHeader]=\"groupHeader\"\n            [offsetX]=\"offsetX\"\n            [detailRowHeight]=\"getDetailRowHeight(group[i],i)\"\n            [row]=\"group\"\n            [expanded]=\"getRowExpanded(group)\"\n            [rowIndex]=\"getRowIndex(group[i])\"\n            (rowContextmenu)=\"rowContextmenu.emit($event)\">\n            <datatable-body-row\n              *ngIf=\"!groupedRows; else groupedRowsTemplate\"\n              tabindex=\"-1\"\n              [isSelected]=\"selector.getRowSelected(group)\"\n              [innerWidth]=\"innerWidth\"\n              [offsetX]=\"offsetX\"\n              [columns]=\"columns\"\n              [rowHeight]=\"getRowHeight(group)\"\n              [row]=\"group\"\n              [rowIndex]=\"getRowIndex(group)\"\n              [expanded]=\"getRowExpanded(group)\"\n              [rowClass]=\"rowClass\"\n              [displayCheck]=\"displayCheck\"\n              [treeStatus]=\"group.treeStatus\"\n              (treeAction)=\"onTreeAction(group)\"\n              (activate)=\"selector.onActivate($event, indexes.first + i)\">\n            </datatable-body-row>\n            <ng-template #groupedRowsTemplate>\n              <datatable-body-row\n                *ngFor=\"let row of group.value; let i = index; trackBy: rowTrackingFn;\"\n                tabindex=\"-1\"\n                [isSelected]=\"selector.getRowSelected(row)\"\n                [innerWidth]=\"innerWidth\"\n                [offsetX]=\"offsetX\"\n                [columns]=\"columns\"\n                [rowHeight]=\"getRowHeight(row)\"\n                [row]=\"row\"\n                [group]=\"group.value\"\n                [rowIndex]=\"getRowIndex(row)\"\n                [expanded]=\"getRowExpanded(row)\"\n                [rowClass]=\"rowClass\"\n                (activate)=\"selector.onActivate($event, i)\">\n              </datatable-body-row>\n            </ng-template>\n          </datatable-row-wrapper>\n        </div>\n        <datatable-summary-row\n          *ngIf=\"summaryRow && summaryPosition === 'bottom'\"\n          [ngStyle]=\"getBottomSummaryRowStyles()\"\n          [rowHeight]=\"summaryHeight\"\n          [offsetX]=\"offsetX\"\n          [innerWidth]=\"innerWidth\"\n          [rows]=\"rows\"\n          [columns]=\"columns\">\n        </datatable-summary-row>\n      </datatable-scroller>\n      <div\n        class=\"empty-row\"\n        *ngIf=\"!rows?.length && !loadingIndicator\"\n        [innerHTML]=\"emptyMessage\">\n      </div>\n    </datatable-selection>\n  ",
+            template: "\n    <datatable-selection\n      #selector\n      [selected]=\"selected\"\n      [rows]=\"rows\"\n      [selectCheck]=\"selectCheck\"\n      [selectEnabled]=\"selectEnabled\"\n      [selectionType]=\"selectionType\"\n      [rowIdentity]=\"rowIdentity\"\n      (select)=\"select.emit($event)\"\n      (activate)=\"activate.emit($event)\">\n      <datatable-progress\n        *ngIf=\"loadingIndicator\">\n      </datatable-progress>\n      <datatable-scroller\n        *ngIf=\"rows?.length\"\n        [scrollbarV]=\"scrollbarV\"\n        [scrollbarH]=\"scrollbarH\"\n        [scrollHeight]=\"scrollHeight\"\n        [scrollWidth]=\"columnGroupWidths?.total\"\n        (scroll)=\"onBodyScroll($event)\">\n        <datatable-summary-row\n          *ngIf=\"summaryRow && summaryPosition === 'top'\"\n          [rowHeight]=\"summaryHeight\"\n          [offsetX]=\"offsetX\"\n          [innerWidth]=\"innerWidth\"\n          [rows]=\"rows\"\n          [columns]=\"columns\">\n        </datatable-summary-row>\n        <div\n          [dragula]=\"dragulaName\"\n          [(dragulaModel)]=\"rows\">\n          <datatable-row-wrapper\n            [groupedRows]=\"groupedRows\"\n            *ngFor=\"let group of temp; let i = index;\"\n            [innerWidth]=\"innerWidth\"\n            [ngStyle]=\"getRowsStyles(group)\"\n            [rowDetail]=\"rowDetail\"\n            [groupHeader]=\"groupHeader\"\n            [offsetX]=\"offsetX\"\n            [detailRowHeight]=\"getDetailRowHeight(group[i],i)\"\n            [row]=\"group\"\n            [expanded]=\"getRowExpanded(group)\"\n            [rowIndex]=\"getRowIndex(group[i])\"\n            (rowContextmenu)=\"rowContextmenu.emit($event)\">\n            <datatable-body-row\n              *ngIf=\"!groupedRows; else groupedRowsTemplate\"\n              tabindex=\"-1\"\n              [isSelected]=\"selector.getRowSelected(group)\"\n              [innerWidth]=\"innerWidth\"\n              [offsetX]=\"offsetX\"\n              [columns]=\"columns\"\n              [rowHeight]=\"getRowHeight(group)\"\n              [row]=\"group\"\n              [rowIndex]=\"getRowIndex(group)\"\n              [expanded]=\"getRowExpanded(group)\"\n              [rowClass]=\"rowClass\"\n              [displayCheck]=\"displayCheck\"\n              [treeStatus]=\"group.treeStatus\"\n              (treeAction)=\"onTreeAction(group)\"\n              (activate)=\"selector.onActivate($event, indexes.first + i)\">\n            </datatable-body-row>\n            <ng-template #groupedRowsTemplate>\n              <datatable-body-row\n                *ngFor=\"let row of group.value; let i = index; trackBy: rowTrackingFn;\"\n                tabindex=\"-1\"\n                [isSelected]=\"selector.getRowSelected(row)\"\n                [innerWidth]=\"innerWidth\"\n                [offsetX]=\"offsetX\"\n                [columns]=\"columns\"\n                [rowHeight]=\"getRowHeight(row)\"\n                [row]=\"row\"\n                [group]=\"group.value\"\n                [rowIndex]=\"getRowIndex(row)\"\n                [expanded]=\"getRowExpanded(row)\"\n                [rowClass]=\"rowClass\"\n                (activate)=\"selector.onActivate($event, i)\">\n              </datatable-body-row>\n            </ng-template>\n          </datatable-row-wrapper>\n        </div>\n        <datatable-summary-row\n          *ngIf=\"summaryRow && summaryPosition === 'bottom'\"\n          [ngStyle]=\"getBottomSummaryRowStyles()\"\n          [rowHeight]=\"summaryHeight\"\n          [offsetX]=\"offsetX\"\n          [innerWidth]=\"innerWidth\"\n          [rows]=\"rows\"\n          [columns]=\"columns\">\n        </datatable-summary-row>\n      </datatable-scroller>\n      <div\n        class=\"empty-row\"\n        *ngIf=\"!rows?.length && !loadingIndicator\"\n        [innerHTML]=\"emptyMessage\">\n      </div>\n    </datatable-selection>\n  ",
             changeDetection: core_1.ChangeDetectionStrategy.OnPush,
             host: {
                 class: 'datatable-body'
@@ -5195,9 +5192,9 @@ var DatatableComponent = /** @class */ (function () {
         this.columnChangesService = columnChangesService;
         /**
          * Enable rows dragging
-         * @type {boolean}
+         * @type {string}
          */
-        this.draggableRows = false;
+        this.dragulaName = null;
         /**
          * List of row objects that should be
          * represented as selected in the grid.
@@ -6098,8 +6095,8 @@ var DatatableComponent = /** @class */ (function () {
     };
     __decorate([
         core_1.Input(),
-        __metadata("design:type", Boolean)
-    ], DatatableComponent.prototype, "draggableRows", void 0);
+        __metadata("design:type", String)
+    ], DatatableComponent.prototype, "dragulaName", void 0);
     __decorate([
         core_1.Input(),
         __metadata("design:type", Object)
@@ -6388,7 +6385,7 @@ var DatatableComponent = /** @class */ (function () {
     DatatableComponent = __decorate([
         core_1.Component({
             selector: 'ngx-datatable',
-            template: "\n    <div\n      visibilityObserver\n      (visible)=\"recalculate()\">\n      <datatable-header\n        *ngIf=\"headerHeight\"\n        [sorts]=\"sorts\"\n        [sortType]=\"sortType\"\n        [scrollbarH]=\"scrollbarH\"\n        [innerWidth]=\"_innerWidth\"\n        [offsetX]=\"_offsetX | async\"\n        [dealsWithGroup]=\"groupedRows\"\n        [columns]=\"_internalColumns\"\n        [headerHeight]=\"headerHeight\"\n        [reorderable]=\"reorderable\"\n        [targetMarkerTemplate]=\"targetMarkerTemplate\"\n        [sortAscendingIcon]=\"cssClasses.sortAscending\"\n        [sortDescendingIcon]=\"cssClasses.sortDescending\"\n        [allRowsSelected]=\"allRowsSelected\"\n        [selectionType]=\"selectionType\"\n        (sort)=\"onColumnSort($event)\"\n        (resize)=\"onColumnResize($event)\"\n        (reorder)=\"onColumnReorder($event)\"\n        (select)=\"onHeaderSelect($event)\"\n        (columnContextmenu)=\"onColumnContextmenu($event)\">\n      </datatable-header>\n      <datatable-body\n        (onRowDrop)=\"onRowDropSuccess($event)\"\n        [draggableRows]=\"draggableRows\"\n        [groupRowsBy]=\"groupRowsBy\"\n        [groupedRows]=\"groupedRows\"\n        [rows]=\"_internalRows\"\n        [groupExpansionDefault]=\"groupExpansionDefault\"\n        [scrollbarV]=\"scrollbarV\"\n        [scrollbarH]=\"scrollbarH\"\n        [virtualization]=\"virtualization\"\n        [loadingIndicator]=\"loadingIndicator\"\n        [externalPaging]=\"externalPaging\"\n        [rowHeight]=\"rowHeight\"\n        [rowCount]=\"rowCount\"\n        [offset]=\"offset\"\n        [trackByProp]=\"trackByProp\"\n        [columns]=\"_internalColumns\"\n        [pageSize]=\"pageSize\"\n        [offsetX]=\"_offsetX | async\"\n        [rowDetail]=\"rowDetail\"\n        [groupHeader]=\"groupHeader\"\n        [selected]=\"selected\"\n        [innerWidth]=\"_innerWidth\"\n        [bodyHeight]=\"bodyHeight\"\n        [selectionType]=\"selectionType\"\n        [emptyMessage]=\"messages.emptyMessage\"\n        [rowIdentity]=\"rowIdentity\"\n        [rowClass]=\"rowClass\"\n        [selectCheck]=\"selectCheck\"\n        [displayCheck]=\"displayCheck\"\n        [summaryRow]=\"summaryRow\"\n        [summaryHeight]=\"summaryHeight\"\n        [summaryPosition]=\"summaryPosition\"\n        (page)=\"onBodyPage($event)\"\n        (activate)=\"activate.emit($event)\"\n        (rowContextmenu)=\"onRowContextmenu($event)\"\n        (select)=\"onBodySelect($event)\"\n        (scroll)=\"onBodyScroll($event)\"\n        (treeAction)=\"onTreeAction($event)\">\n      </datatable-body>\n      <datatable-footer\n        *ngIf=\"footerHeight\"\n        [rowCount]=\"rowCount\"\n        [pageSize]=\"pageSize\"\n        [offset]=\"offset\"\n        [footerHeight]=\"footerHeight\"\n        [footerTemplate]=\"footer\"\n        [totalMessage]=\"messages.totalMessage\"\n        [pagerLeftArrowIcon]=\"cssClasses.pagerLeftArrow\"\n        [pagerRightArrowIcon]=\"cssClasses.pagerRightArrow\"\n        [pagerPreviousIcon]=\"cssClasses.pagerPrevious\"\n        [selectedCount]=\"selected.length\"\n        [selectedMessage]=\"!!selectionType && messages.selectedMessage\"\n        [pagerNextIcon]=\"cssClasses.pagerNext\"\n        (page)=\"onFooterPage($event)\">\n      </datatable-footer>\n    </div>\n  ",
+            template: "\n    <div\n      visibilityObserver\n      (visible)=\"recalculate()\">\n      <datatable-header\n        *ngIf=\"headerHeight\"\n        [sorts]=\"sorts\"\n        [sortType]=\"sortType\"\n        [scrollbarH]=\"scrollbarH\"\n        [innerWidth]=\"_innerWidth\"\n        [offsetX]=\"_offsetX | async\"\n        [dealsWithGroup]=\"groupedRows\"\n        [columns]=\"_internalColumns\"\n        [headerHeight]=\"headerHeight\"\n        [reorderable]=\"reorderable\"\n        [targetMarkerTemplate]=\"targetMarkerTemplate\"\n        [sortAscendingIcon]=\"cssClasses.sortAscending\"\n        [sortDescendingIcon]=\"cssClasses.sortDescending\"\n        [allRowsSelected]=\"allRowsSelected\"\n        [selectionType]=\"selectionType\"\n        (sort)=\"onColumnSort($event)\"\n        (resize)=\"onColumnResize($event)\"\n        (reorder)=\"onColumnReorder($event)\"\n        (select)=\"onHeaderSelect($event)\"\n        (columnContextmenu)=\"onColumnContextmenu($event)\">\n      </datatable-header>\n      <datatable-body\n        (onRowDrop)=\"onRowDropSuccess($event)\"\n        [dragulaName]=\"dragulaName\"\n        [groupRowsBy]=\"groupRowsBy\"\n        [groupedRows]=\"groupedRows\"\n        [rows]=\"_internalRows\"\n        [groupExpansionDefault]=\"groupExpansionDefault\"\n        [scrollbarV]=\"scrollbarV\"\n        [scrollbarH]=\"scrollbarH\"\n        [virtualization]=\"virtualization\"\n        [loadingIndicator]=\"loadingIndicator\"\n        [externalPaging]=\"externalPaging\"\n        [rowHeight]=\"rowHeight\"\n        [rowCount]=\"rowCount\"\n        [offset]=\"offset\"\n        [trackByProp]=\"trackByProp\"\n        [columns]=\"_internalColumns\"\n        [pageSize]=\"pageSize\"\n        [offsetX]=\"_offsetX | async\"\n        [rowDetail]=\"rowDetail\"\n        [groupHeader]=\"groupHeader\"\n        [selected]=\"selected\"\n        [innerWidth]=\"_innerWidth\"\n        [bodyHeight]=\"bodyHeight\"\n        [selectionType]=\"selectionType\"\n        [emptyMessage]=\"messages.emptyMessage\"\n        [rowIdentity]=\"rowIdentity\"\n        [rowClass]=\"rowClass\"\n        [selectCheck]=\"selectCheck\"\n        [displayCheck]=\"displayCheck\"\n        [summaryRow]=\"summaryRow\"\n        [summaryHeight]=\"summaryHeight\"\n        [summaryPosition]=\"summaryPosition\"\n        (page)=\"onBodyPage($event)\"\n        (activate)=\"activate.emit($event)\"\n        (rowContextmenu)=\"onRowContextmenu($event)\"\n        (select)=\"onBodySelect($event)\"\n        (scroll)=\"onBodyScroll($event)\"\n        (treeAction)=\"onTreeAction($event)\">\n      </datatable-body>\n      <datatable-footer\n        *ngIf=\"footerHeight\"\n        [rowCount]=\"rowCount\"\n        [pageSize]=\"pageSize\"\n        [offset]=\"offset\"\n        [footerHeight]=\"footerHeight\"\n        [footerTemplate]=\"footer\"\n        [totalMessage]=\"messages.totalMessage\"\n        [pagerLeftArrowIcon]=\"cssClasses.pagerLeftArrow\"\n        [pagerRightArrowIcon]=\"cssClasses.pagerRightArrow\"\n        [pagerPreviousIcon]=\"cssClasses.pagerPrevious\"\n        [selectedCount]=\"selected.length\"\n        [selectedMessage]=\"!!selectionType && messages.selectedMessage\"\n        [pagerNextIcon]=\"cssClasses.pagerNext\"\n        (page)=\"onFooterPage($event)\">\n      </datatable-footer>\n    </div>\n  ",
             changeDetection: core_1.ChangeDetectionStrategy.OnPush,
             encapsulation: core_1.ViewEncapsulation.None,
             styles: [__webpack_require__("./src/components/datatable.component.scss")],

@@ -14,7 +14,7 @@ import { Component } from '@angular/core';
       </h3>
       <ngx-datatable
         class="material"
-        [draggableRows]="true" 
+        [dragulaName]="'newBag'" 
         (onRowDrop)="onDropEvent($event)"
         [rows]="rows"
         [loadingIndicator]="loadingIndicator"
