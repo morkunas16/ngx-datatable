@@ -30,7 +30,7 @@ export declare class DataTableBodyComponent implements OnInit, OnDestroy {
     summaryRow: boolean;
     summaryPosition: string;
     summaryHeight: number;
-    draggableRows?: boolean;
+    dragulaName: string;
     pageSize: number;
     rows: any[];
     columns: any[];
@@ -80,10 +80,6 @@ export declare class DataTableBodyComponent implements OnInit, OnDestroy {
      * Creates an instance of DataTableBodyComponent.
      */
     constructor(cd: ChangeDetectorRef, dragulaService: DragulaService);
-    /**
-     * On row drop update rows in ngx-datatable
-     */
-    isRowsDraggable(): string;
     /**
      * Called after the constructor, initializing input properties
      */

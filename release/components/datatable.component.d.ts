@@ -15,9 +15,9 @@ export declare class DatatableComponent implements OnInit, DoCheck, AfterViewIni
     private columnChangesService;
     /**
      * Enable rows dragging
-     * @type {boolean}
+     * @type {string}
      */
-    draggableRows: boolean;
+    dragulaName?: string;
     /**
      * Template for the target marker of drag target columns.
      */

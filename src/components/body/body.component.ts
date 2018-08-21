@@ -40,7 +40,7 @@ import {DragulaService} from 'ng2-dragula';
           [columns]="columns">
         </datatable-summary-row>
         <div
-          [dragula]="isRowsDraggable()"
+          [dragula]="dragulaName"
           [(dragulaModel)]="rows">
           <datatable-row-wrapper
             [groupedRows]="groupedRows"
@@ -140,7 +140,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
   @Input() summaryPosition: string;
   @Input() summaryHeight: number;
 
-  @Input() draggableRows?: boolean = false;
+  @Input() dragulaName: string;
 
   @Input() set pageSize(val: number) {
     this._pageSize = val;
@@ -281,27 +281,22 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
     /**
      * Declares to dragula handle to drag row
      */
-    dragulaService.createGroup('newBag', {
-      moves: (el, container, handle) => {
-        return handle.className === 'handle';
-      }
-    });
+    if (!this.dragulaService.find(this.dragulaName)) {
+      dragulaService.createGroup(this.dragulaName, {
+        moves: (el, container, handle) => {
+          return handle.className === 'handle';
+        }
+      });
+    }
 
     /**
      * Subscribes for dropModel event and emit onRowDrop event to fire it outside the ngx-datatable
      */
-    dragulaService.dropModel('newBag')
+    dragulaService.dropModel(this.dragulaName)
       .subscribe(({el, target, source, sourceModel, targetModel, item}) => {
         this.rows = [...sourceModel];
         this.onRowDrop.emit(this.rows);
       });
-  }
-
-  /**
-   * On row drop update rows in ngx-datatable
-   */
-  isRowsDraggable(): string {
-    return this.draggableRows ? 'newBag' : null;
   }
 
   /**
@@ -342,6 +337,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
    * Called once, before the instance is destroyed.
    */
   ngOnDestroy(): void {
+    if (this.dragulaService.find('newBag')) this.dragulaService.destroy('newBag');
     if (this.rowDetail) this.listener.unsubscribe();
     if (this.groupHeader) this.listener.unsubscribe();
   }
