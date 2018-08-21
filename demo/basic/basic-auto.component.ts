@@ -24,6 +24,12 @@ import { Component } from '@angular/core';
         [footerHeight]="50"
         [rowHeight]="'auto'"
         [reorderable]="reorderable">
+        <ngx-datatable-column name="Name">
+          <ng-template let-value="value" ngx-datatable-cell-template>
+            <span class="handle">====</span>
+            <strong>{{value}}</strong>
+          </ng-template>
+        </ngx-datatable-column>
       </ngx-datatable>
     </div>
   `
