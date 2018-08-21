@@ -1,9 +1,9 @@
-import { EventEmitter, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
+import { EventEmitter, ChangeDetectorRef, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { RowHeightCache } from '../../utils';
 import { SelectionType } from '../../types';
 import { ScrollerComponent } from './scroller.component';
 import { DragulaService } from 'ng2-dragula';
-export declare class DataTableBodyComponent implements OnInit, OnDestroy {
+export declare class DataTableBodyComponent implements OnInit, OnDestroy, OnChanges {
     private cd;
     private dragulaService;
     scrollbarV: boolean;
@@ -80,6 +80,7 @@ export declare class DataTableBodyComponent implements OnInit, OnDestroy {
      * Creates an instance of DataTableBodyComponent.
      */
     constructor(cd: ChangeDetectorRef, dragulaService: DragulaService);
+    ngOnChanges(changes: SimpleChanges): void;
     /**
      * Called after the constructor, initializing input properties
      */

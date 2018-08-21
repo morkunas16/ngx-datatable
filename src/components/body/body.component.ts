@@ -1,6 +1,6 @@
 import {
   Component, Output, EventEmitter, Input, HostBinding, ChangeDetectorRef,
-  ViewChild, OnInit, OnDestroy, ChangeDetectionStrategy
+  ViewChild, OnInit, OnDestroy, ChangeDetectionStrategy, OnChanges, SimpleChanges
 } from '@angular/core';
 import {translateXY, columnsByPin, columnGroupWidths, RowHeightCache} from '../../utils';
 import {SelectionType} from '../../types';
@@ -74,7 +74,7 @@ import {DragulaService} from 'ng2-dragula';
             </datatable-body-row>
             <ng-template #groupedRowsTemplate>
               <datatable-body-row
-                *ngFor="let row of group.value; let i = index; trackBy: rowTrackingFn;"
+                *ngFor="let row of group.value; let i = index;"
                 tabindex="-1"
                 [isSelected]="selector.getRowSelected(row)"
                 [innerWidth]="innerWidth"
@@ -113,7 +113,7 @@ import {DragulaService} from 'ng2-dragula';
     class: 'datatable-body'
   }
 })
-export class DataTableBodyComponent implements OnInit, OnDestroy {
+export class DataTableBodyComponent implements OnInit, OnDestroy, OnChanges {
 
   @Input() scrollbarV: boolean;
   @Input() scrollbarH: boolean;
@@ -277,26 +277,31 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
         return idx;
       }
     }.bind(this);
+  }
 
-    /**
-     * Declares to dragula handle to drag row
-     */
-    if (!this.dragulaService.find(this.dragulaName)) {
-      dragulaService.createGroup(this.dragulaName, {
-        moves: (el, container, handle) => {
-          return handle.className === 'handle';
-        }
-      });
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.dragulaName) {
+      /**
+       * Sets handle to all rows
+       */
+      if (!this.dragulaService.find(this.dragulaName)) {
+        this.dragulaService.createGroup(this.dragulaName, {
+          moves: (el, container, handle) => {
+            return handle.className === 'handle';
+          }
+        });
+      }
+
+      /**
+       * Subscribes for dropModel event and emit onRowDrop event to fire it outside the ngx-datatable
+       */
+      this.dragulaService.dropModel(this.dragulaName)
+        .subscribe(({el, target, source, sourceModel, targetModel, item}) => {
+          this.rows = [...sourceModel];
+          this.onRowDrop.emit(this.rows);
+          this.updateRows();
+        });
     }
-
-    /**
-     * Subscribes for dropModel event and emit onRowDrop event to fire it outside the ngx-datatable
-     */
-    dragulaService.dropModel(this.dragulaName)
-      .subscribe(({el, target, source, sourceModel, targetModel, item}) => {
-        this.rows = [...sourceModel];
-        this.onRowDrop.emit(this.rows);
-      });
   }
 
   /**
