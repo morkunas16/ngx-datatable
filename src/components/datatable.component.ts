@@ -51,6 +51,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
         (columnContextmenu)="onColumnContextmenu($event)">
       </datatable-header>
       <datatable-body
+        [draggableRows]="draggableRows"
         [groupRowsBy]="groupRowsBy"
         [groupedRows]="groupedRows"
         [rows]="_internalRows"
@@ -114,6 +115,12 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   }
 })
 export class DatatableComponent implements OnInit, DoCheck, AfterViewInit {
+
+  /**
+   * Enable rows dragging
+   * @type {boolean}
+   */
+  @Input() draggableRows: boolean = false;
 
   /**
    * Template for the target marker of drag target columns.
