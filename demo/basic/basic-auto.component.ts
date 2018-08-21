@@ -14,6 +14,7 @@ import { Component } from '@angular/core';
       </h3>
       <ngx-datatable
         class="material"
+        [draggableRows]="true" 
         [rows]="rows"
         [loadingIndicator]="loadingIndicator"
         [columns]="columns"

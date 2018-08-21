@@ -6,6 +6,7 @@ import {translateXY, columnsByPin, columnGroupWidths, RowHeightCache} from '../.
 import {SelectionType} from '../../types';
 import {ScrollerComponent} from './scroller.component';
 import {MouseEvent} from '../../events';
+import {DragulaService} from 'ng2-dragula';
 
 @Component({
   selector: 'datatable-body',
@@ -25,8 +26,6 @@ import {MouseEvent} from '../../events';
       </datatable-progress>
       <datatable-scroller
         *ngIf="rows?.length"
-        dnd-sortable-container
-        [sortableData]="rows"
         [scrollbarV]="scrollbarV"
         [scrollbarH]="scrollbarH"
         [scrollHeight]="scrollHeight"
@@ -40,58 +39,58 @@ import {MouseEvent} from '../../events';
           [rows]="rows"
           [columns]="columns">
         </datatable-summary-row>
-        <datatable-row-wrapper
-          [groupedRows]="groupedRows"
-          *ngFor="let group of temp; let i = index; trackBy: rowTrackingFn;"
-          dnd-sortable
-          [dragEnabled]="draggableRows"
-          [sortableIndex]="i"
-          (onDropSuccess)="onRowDrop($event)"
-          [innerWidth]="innerWidth"
-          [ngStyle]="getRowsStyles(group)"
-          [rowDetail]="rowDetail"
-          [groupHeader]="groupHeader"
-          [offsetX]="offsetX"
-          [detailRowHeight]="getDetailRowHeight(group[i],i)"
-          [row]="group"
-          [expanded]="getRowExpanded(group)"
-          [rowIndex]="getRowIndex(group[i])"
-          (rowContextmenu)="rowContextmenu.emit($event)">
-          <datatable-body-row
-            *ngIf="!groupedRows; else groupedRowsTemplate"
-            tabindex="-1"
-            [isSelected]="selector.getRowSelected(group)"
+        <div
+          [dragula]="isRowsDraggable()"
+          [(dragulaModel)]="rows">
+          <datatable-row-wrapper
+            [groupedRows]="groupedRows"
+            *ngFor="let group of temp; let i = index;"
             [innerWidth]="innerWidth"
+            [ngStyle]="getRowsStyles(group)"
+            [rowDetail]="rowDetail"
+            [groupHeader]="groupHeader"
             [offsetX]="offsetX"
-            [columns]="columns"
-            [rowHeight]="getRowHeight(group)"
+            [detailRowHeight]="getDetailRowHeight(group[i],i)"
             [row]="group"
-            [rowIndex]="getRowIndex(group)"
             [expanded]="getRowExpanded(group)"
-            [rowClass]="rowClass"
-            [displayCheck]="displayCheck"
-            [treeStatus]="group.treeStatus"
-            (treeAction)="onTreeAction(group)"
-            (activate)="selector.onActivate($event, indexes.first + i)">
-          </datatable-body-row>
-          <ng-template #groupedRowsTemplate>
+            [rowIndex]="getRowIndex(group[i])"
+            (rowContextmenu)="rowContextmenu.emit($event)">
             <datatable-body-row
-              *ngFor="let row of group.value; let i = index; trackBy: rowTrackingFn;"
+              *ngIf="!groupedRows; else groupedRowsTemplate"
               tabindex="-1"
-              [isSelected]="selector.getRowSelected(row)"
+              [isSelected]="selector.getRowSelected(group)"
               [innerWidth]="innerWidth"
               [offsetX]="offsetX"
               [columns]="columns"
-              [rowHeight]="getRowHeight(row)"
-              [row]="row"
-              [group]="group.value"
-              [rowIndex]="getRowIndex(row)"
-              [expanded]="getRowExpanded(row)"
+              [rowHeight]="getRowHeight(group)"
+              [row]="group"
+              [rowIndex]="getRowIndex(group)"
+              [expanded]="getRowExpanded(group)"
               [rowClass]="rowClass"
-              (activate)="selector.onActivate($event, i)">
+              [displayCheck]="displayCheck"
+              [treeStatus]="group.treeStatus"
+              (treeAction)="onTreeAction(group)"
+              (activate)="selector.onActivate($event, indexes.first + i)">
             </datatable-body-row>
-          </ng-template>
-        </datatable-row-wrapper>
+            <ng-template #groupedRowsTemplate>
+              <datatable-body-row
+                *ngFor="let row of group.value; let i = index; trackBy: rowTrackingFn;"
+                tabindex="-1"
+                [isSelected]="selector.getRowSelected(row)"
+                [innerWidth]="innerWidth"
+                [offsetX]="offsetX"
+                [columns]="columns"
+                [rowHeight]="getRowHeight(row)"
+                [row]="row"
+                [group]="group.value"
+                [rowIndex]="getRowIndex(row)"
+                [expanded]="getRowExpanded(row)"
+                [rowClass]="rowClass"
+                (activate)="selector.onActivate($event, i)">
+              </datatable-body-row>
+            </ng-template>
+          </datatable-row-wrapper>
+        </div>
         <datatable-summary-row
           *ngIf="summaryRow && summaryPosition === 'bottom'"
           [ngStyle]="getBottomSummaryRowStyles()"
@@ -141,7 +140,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
   @Input() summaryPosition: string;
   @Input() summaryHeight: number;
 
-  @Input() draggableRows: boolean;
+  @Input() draggableRows?: boolean = false;
 
   @Input() set pageSize(val: number) {
     this._pageSize = val;
@@ -266,9 +265,9 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
   /**
    * Creates an instance of DataTableBodyComponent.
    */
-  constructor(private cd: ChangeDetectorRef) {
+  constructor(private cd: ChangeDetectorRef, private dragulaService: DragulaService) {
     // declare fn here so we can get access to the `this` property
-    this.rowTrackingFn = function (this: any, index: number, row: any): any {
+    this.rowTrackingFn = function(this: any, index: number, row: any): any {
       const idx = this.getRowIndex(row);
       if (this.trackByProp) {
         return `${idx}-${this.trackByProp}`;
@@ -276,15 +275,17 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
         return idx;
       }
     }.bind(this);
-
+    dragulaService.dropModel('newBag')
+      .subscribe(({el, target, source, sourceModel, targetModel, item}) => {
+        this.rows = [...sourceModel];
+      });
   }
 
   /**
    * On row drop update rows in ngx-datatable
-   * @param event
    */
-  onRowDrop(event) {
-    this.rows = [...this.rows];
+  isRowsDraggable(): string {
+    return this.draggableRows ? 'newBag' : null;
   }
 
   /**
@@ -318,6 +319,7 @@ export class DataTableBodyComponent implements OnInit, OnDestroy {
           this.cd.markForCheck();
         });
     }
+
   }
 
   /**
